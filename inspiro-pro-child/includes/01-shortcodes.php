@@ -169,3 +169,87 @@ function agent_directory_shortcode() {
     return ob_get_clean();
 }
 add_shortcode('agent_directory', 'agent_directory_shortcode');
+
+
+
+function agent_register_shortcode() {
+
+    if ( is_user_logged_in() ) {
+        return '<p>You are already logged in.</p>';
+    }
+
+    $errors = [];
+    $success = false;
+
+    if ( isset($_POST['agent_register_nonce']) &&
+         wp_verify_nonce($_POST['agent_register_nonce'], 'agent_register') ) {
+
+        $username = sanitize_user($_POST['username'] ?? '');
+        $email    = sanitize_email($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+
+        if ( empty($username) || empty($email) || empty($password) ) {
+            $errors[] = 'All fields are required.';
+        }
+
+        if ( username_exists($username) ) {
+            $errors[] = 'Username already exists.';
+        }
+
+        if ( email_exists($email) ) {
+            $errors[] = 'Email already registered.';
+        }
+
+        if ( empty($errors) ) {
+            $user_id = wp_create_user($username, $password, $email);
+
+            if ( ! is_wp_error($user_id) ) {
+
+                // Assign agent role
+                $user = new WP_User($user_id);
+                $user->set_role('agent');
+
+                // Auto login
+                wp_set_current_user($user_id);
+                wp_set_auth_cookie($user_id);
+
+                // Redirect to agent dashboard
+                wp_safe_redirect( get_permalink(13006) );
+                exit;
+            } else {
+                $errors[] = $user_id->get_error_message();
+            }
+        }
+    }
+
+    ob_start();
+    ?>
+
+    <?php if ($errors): ?>
+        <ul class="agent-register-errors">
+            <?php foreach ($errors as $error): ?>
+                <li><?php echo esc_html($error); ?></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+
+    <form method="post" class="agent-register-form">
+        <label>Username</label>
+        <input type="text" name="username" required>
+
+        <label>Email</label>
+        <input type="email" name="email" required>
+
+        <label>Password</label>
+        <input type="password" name="password" required>
+
+        <input type="hidden" name="agent_register_nonce"
+               value="<?php echo wp_create_nonce('agent_register'); ?>">
+
+        <button type="submit">Register</button>
+    </form>
+
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('agent_register', 'agent_register_shortcode');
