@@ -1,0 +1,35 @@
+/*
+ Theme Name: Inspiro PRO Child v0.9.0
+ Theme URI: https://github.com/venture-media/flynamibia
+ Description: Child theme for Inspiro Pro
+ Author: Leon de Klerk
+ Author URI: https://github.com/Leon2332/
+ Template: inspiro-pro
+ Version: 0.9.0
+
+
+------------------------------------------------------------------
+ CHILD THEME STRUCTURE OVERVIEW
+------------------------------------------------------------------
+
+
+inspiro-pro-child/
+    │
+    ├─ functions.php                             → Main loader: enqueues CSS/JS, includes modular PHP files
+    │
+    ├─ style.css                                 → Theme header & notes (This file)
+    │
+    ├─ includes/                                 → PHP modules
+    │       ├─ 00-roles
+    │       └─ 01-shortcodes
+    │
+    └─ screenshot.jpg                            → Theme screenshot for WP admin
+
+
+
+------------------------------------------------------------------
+ NOTES
+------------------------------------------------------------------
+• All CSS files are auto-enqueued in numeric order via functions.php.
+• JS files are whitelisted for security via functions.php.
+*/
