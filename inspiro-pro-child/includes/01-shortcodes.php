@@ -152,15 +152,28 @@ function agent_directory_shortcode() {
                 // skip empty users (no profile data)
                 if (!$title && !$company && !$country && !$mobile && !$whatsapp && !$email) continue;
             ?>
-                <tr>
-                    <td class="agent-directory-name"><?php echo esc_html($user->display_name); ?></td>
-                    <td class="agent-directory-title"><?php echo esc_html($title); ?></td>
-                    <td class="agent-directory-company"><?php echo esc_html($company); ?></td>
-                    <td class="agent-directory-country"><?php echo esc_html($country); ?></td>
-                    <td class="agent-directory-mobile"><?php echo esc_html($mobile); ?></td>
-                    <td class="agent-directory-whatsapp"><?php echo esc_html($whatsapp); ?></td>
-                    <td class="agent-directory-email"><a href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a></td>
-                </tr>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Job Title</th>
+                        <th>Company</th>
+                        <th>Country</th>
+                        <th>Mobile</th>
+                        <th>WhatsApp</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="agent-directory-name"><?php echo esc_html($user->display_name); ?></td>
+                        <td class="agent-directory-title"><?php echo esc_html($title); ?></td>
+                        <td class="agent-directory-company"><?php echo esc_html($company); ?></td>
+                        <td class="agent-directory-country"><?php echo esc_html($country); ?></td>
+                        <td class="agent-directory-mobile"><?php echo esc_html($mobile); ?></td>
+                        <td class="agent-directory-whatsapp"><?php echo esc_html($whatsapp); ?></td>
+                        <td class="agent-directory-email"><a href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a></td>
+                    </tr>
+                </tbody>
             <?php endforeach; ?>
         </tbody>
     </table>
