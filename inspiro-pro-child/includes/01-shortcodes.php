@@ -20,29 +20,37 @@ function agent_dashboard_shortcode() {
 
 
     // Handle form submission
-    if ( isset($_POST['agent_nonce']) && wp_verify_nonce($_POST['agent_nonce'], 'agent_update') ) {
-        if ( ! function_exists( 'media_handle_upload' ) ) {
-            require_once ABSPATH . 'wp-admin/includes/image.php';
-            require_once ABSPATH . 'wp-admin/includes/file.php';
-            require_once ABSPATH . 'wp-admin/includes/media.php';
-        }
-
-        // Save job title
-        update_user_meta($user_id, 'agent_title', sanitize_text_field($_POST['agent_title']));
-
-        // Save company
-        update_user_meta($user_id, 'agent_company', sanitize_textarea_field($_POST['agent_company']));
-
-        // Save country
-        update_user_meta($user_id, 'agent_country', sanitize_textarea_field($_POST['agent_country']));
-
-        // Save mobile, whatsapp and email
-        update_user_meta($user_id, 'agent_mobile', sanitize_text_field($_POST['agent_mobile']));
-        update_user_meta($user_id, 'agent_whatsapp', sanitize_text_field($_POST['agent_whatsapp']));
-        update_user_meta($user_id, 'agent_email', sanitize_email($_POST['agent_email']));
-
-        echo '<p class="agent-success">✅ Your details have been updated.</p>';
+    if (
+        isset($_POST['agent_nonce']) &&
+        wp_verify_nonce($_POST['agent_nonce'], 'agent_update')
+    ) {
+    
+        $user_id = get_current_user_id();
+    
+        // Save fields safely
+        update_user_meta($user_id, 'agent_title', isset($_POST['agent_title']) ? sanitize_text_field($_POST['agent_title']) : '');
+        update_user_meta($user_id, 'agent_company', isset($_POST['agent_company']) ? sanitize_textarea_field($_POST['agent_company']) : '');
+        update_user_meta($user_id, 'agent_country', isset($_POST['agent_country']) ? sanitize_textarea_field($_POST['agent_country']) : '');
+        update_user_meta($user_id, 'agent_mobile', isset($_POST['agent_mobile']) ? sanitize_text_field($_POST['agent_mobile']) : '');
+        update_user_meta($user_id, 'agent_whatsapp', isset($_POST['agent_whatsapp']) ? sanitize_text_field($_POST['agent_whatsapp']) : '');
+        update_user_meta($user_id, 'agent_email', isset($_POST['agent_email']) ? sanitize_email($_POST['agent_email']) : '');
+    
+        // Set a transient to show a one-time success message
+        set_transient('agent_profile_updated_' . $user_id, true, 30);
+    
+        // Redirect to the same page (PRG pattern)
+        wp_safe_redirect(add_query_arg('updated', 'true', get_permalink()));
+        exit;
     }
+    
+    // Success message
+    $success_message = '';
+    $user_id = get_current_user_id();
+    if ( get_transient('agent_profile_updated_' . $user_id) ) {
+        $success_message = '<p class="agent-success">✅ Your details have been updated.</p>';
+        delete_transient('agent_profile_updated_' . $user_id);
+    }
+
 
     // Get existing values
     $title = get_user_meta($user_id, 'agent_title', true);
@@ -52,7 +60,9 @@ function agent_dashboard_shortcode() {
     $whatsapp = get_user_meta($user_id, 'agent_whatsapp', true);
     $email  = get_user_meta($user_id, 'agent_email', true);
 
-    ob_start(); ?>
+    ob_start();
+    echo $success_message;
+    ?>
     <form method="post" enctype="multipart/form-data" class="agent-profile-form">
         <label for="agent_title">Job Title</label>
         <input type="text" id="agent_title" name="agent_title" value="<?php echo esc_attr($title); ?>">
@@ -154,22 +164,6 @@ function agent_directory_shortcode() {
             <?php endforeach; ?>
         </tbody>
     </table>
-
-    <style>
-        .agent-directory {
-            border-collapse: collapse;
-            width: 100%;
-            border: none;
-        }
-        .agent-directory tr {
-            border: solid 1px #AB292E);
-        }
-        .agent-directory td {
-            padding: 10px;
-            border: none;
-            vertical-align: middle;
-        }
-    </style>
 
     <?php
     return ob_get_clean();
