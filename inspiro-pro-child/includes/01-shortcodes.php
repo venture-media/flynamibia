@@ -68,10 +68,10 @@ function agent_dashboard_shortcode() {
         <input type="text" id="agent_title" name="agent_title" value="<?php echo esc_attr($title); ?>">
 
         <label for="agent_company">Company</label>
-        <textarea id="agent_company" name="agent_company" rows="6"><?php echo esc_textarea($company); ?></textarea>
+        <input type="text" id="agent_company" name="agent_company" value="<?php echo esc_attr($company); ?>">
 
         <label for="agent_country">Country</label>
-        <textarea id="agent_country" name="agent_country" rows="6"><?php echo esc_textarea($country); ?></textarea>
+        <input type="text" id="agent_country" name="agent_country" value="<?php echo esc_attr($country); ?>">
         
         <label for="agent_mobile">Mobile number</label>
         <input type="text" id="agent_mobile" name="agent_mobile" value="<?php echo esc_attr($mobile); ?>">
