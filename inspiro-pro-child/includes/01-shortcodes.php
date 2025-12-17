@@ -194,25 +194,34 @@ function agent_register_shortcode() {
     $errors = [];
     $success = false;
 
-    if ( isset($_POST['agent_register_nonce']) &&
-         wp_verify_nonce($_POST['agent_register_nonce'], 'agent_register') ) {
-
-        $username = sanitize_user($_POST['username'] ?? '');
-        $email    = sanitize_email($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
-
+    if (
+        isset($_POST['agent_register_nonce']) &&
+        wp_verify_nonce($_POST['agent_register_nonce'], 'agent_register')
+    ) {
+    
+        // Honeypot – fail fast
+        if ( ! empty($_POST['website']) ) {
+            wp_safe_redirect( home_url() );
+            exit;
+        }
+    
+        $username = sanitize_user( trim($_POST['username'] ?? '') );
+        $email    = sanitize_email( trim($_POST['email'] ?? '') );
+        $password = trim($_POST['password'] ?? '');
+    
         if ( empty($username) || empty($email) || empty($password) ) {
             $errors[] = 'All fields are required.';
         }
-
+    
         if ( username_exists($username) ) {
             $errors[] = 'Username already exists.';
         }
-
+    
         if ( email_exists($email) ) {
             $errors[] = 'Email already registered.';
         }
 
+        
         if ( empty($errors) ) {
             $user_id = wp_create_user($username, $password, $email);
 
@@ -258,6 +267,12 @@ function agent_register_shortcode() {
 
         <input type="hidden" name="agent_register_nonce"
                value="<?php echo wp_create_nonce('agent_register'); ?>">
+
+        <!-- Honeypot field (should stay empty) -->
+        <div style="display:none;">
+            <label>Leave this field empty</label>
+            <input type="text" name="website" tabindex="-1" autocomplete="off">
+        </div>
 
         <button type="submit">Register</button>
     </form>
