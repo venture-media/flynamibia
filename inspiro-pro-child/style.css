@@ -20,8 +20,9 @@ inspiro-pro-child/
     ├─ style.css                                 → Theme header & notes (This file)
     │
     ├─ includes/                                 → PHP modules
-    │       ├─ 00-roles
-    │       └─ 01-shortcodes
+    │       ├─ 00-roles.php
+    │       ├─ 01-shortcodes.php
+    │       └─ 02-robots.php
     │
     └─ screenshot.jpg                            → Theme screenshot for WP admin
 
