@@ -36,14 +36,34 @@ function venture_register_agent_role() {
 add_action( 'init', 'venture_register_agent_role', 5 ); // early init, before shortcodes load
 
 
-// Redirect non-logged-in users away from Agent Dashboard page
-function protect_agent_dashboard_page() {
-    if ( is_page(13006) && ! is_user_logged_in() ) {
-        wp_safe_redirect( wp_login_url( get_permalink(13006) ) );
+// Redirect non-logged-in users away from Agent Dashboard and all child pages
+function protect_agent_dashboard_pages() {
+
+    // Allow logged-in users
+    if ( is_user_logged_in() ) {
+        return;
+    }
+
+    // Only run on pages
+    if ( ! is_page() ) {
+        return;
+    }
+
+    global $post;
+
+    $agent_parent_id = 13006;
+
+    // If this page is the agent page OR a child of it
+    if (
+        $post->ID == $agent_parent_id ||
+        in_array( $agent_parent_id, get_post_ancestors( $post->ID ), true )
+    ) {
+        wp_safe_redirect( wp_login_url( get_permalink( $agent_parent_id ) ) );
         exit;
     }
 }
-add_action( 'template_redirect', 'protect_agent_dashboard_page' );
+add_action( 'template_redirect', 'protect_agent_dashboard_pages' );
+
 
 
 // Hide admin bar for agent users
