@@ -119,11 +119,11 @@ add_shortcode('agent_name', 'agent_name_shortcode');
 
 // Shortcode: [agent_directory]
 function agent_directory_shortcode() {
-    // Only show for logged-in agent or admins
-  
-    if ( ! ( current_user_can('agent') || current_user_can('administrator') ) ) {
-        return '<p>You do not have permission to view this list.</p>';
-    }
+
+    if ( ! current_user_can('administrator') ) {
+    return '<p>You do not have permission to view this list.</p>';
+}
+
 
     $args = array(
         'role__in' => array('agent', 'administrator'),
@@ -139,41 +139,47 @@ function agent_directory_shortcode() {
     ob_start(); ?>
 
     <table class="agent-directory">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Job Title</th>
+                <th>Company</th>
+                <th>Country</th>
+                <th>Mobile</th>
+                <th>WhatsApp</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+
         <tbody>
             <?php foreach ($users as $user):
-                $user_id = $user->ID;
-                $title   = get_user_meta($user_id, 'agent_title', true);
-                $company   = get_user_meta($user_id, 'agent_company', true);
-                $country   = get_user_meta($user_id, 'agent_country', true);
-                $mobile  = get_user_meta($user_id, 'agent_mobile', true);
-                $whatsapp  = get_user_meta($user_id, 'agent_whatsapp', true);
-                $email   = get_user_meta($user_id, 'agent_email', true);
-                
-                // skip empty users (no profile data)
-                if (!$title && !$company && !$country && !$mobile && !$whatsapp && !$email) continue;
+
+                $user_id  = $user->ID;
+                $title    = get_user_meta($user_id, 'agent_title', true);
+                $company  = get_user_meta($user_id, 'agent_company', true);
+                $country  = get_user_meta($user_id, 'agent_country', true);
+                $mobile   = get_user_meta($user_id, 'agent_mobile', true);
+                $whatsapp = get_user_meta($user_id, 'agent_whatsapp', true);
+                $email    = get_user_meta($user_id, 'agent_email', true);
+
+                // Skip users with no profile data
+                if (!$title && !$company && !$country && !$mobile && !$whatsapp && !$email) {
+                    continue;
+                }
             ?>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Job Title</th>
-                        <th>Company</th>
-                        <th>Country</th>
-                        <th>Mobile</th>
-                        <th>WhatsApp</th>
-                        <th>Email</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="agent-directory-name"><?php echo esc_html($user->display_name); ?></td>
-                        <td class="agent-directory-title"><?php echo esc_html($title); ?></td>
-                        <td class="agent-directory-company"><?php echo esc_html($company); ?></td>
-                        <td class="agent-directory-country"><?php echo esc_html($country); ?></td>
-                        <td class="agent-directory-mobile"><?php echo esc_html($mobile); ?></td>
-                        <td class="agent-directory-whatsapp"><?php echo esc_html($whatsapp); ?></td>
-                        <td class="agent-directory-email"><a href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a></td>
-                    </tr>
-                </tbody>
+                <tr>
+                    <td class="agent-directory-name"><?php echo esc_html($user->display_name); ?></td>
+                    <td class="agent-directory-title"><?php echo esc_html($title); ?></td>
+                    <td class="agent-directory-company"><?php echo esc_html($company); ?></td>
+                    <td class="agent-directory-country"><?php echo esc_html($country); ?></td>
+                    <td class="agent-directory-mobile"><?php echo esc_html($mobile); ?></td>
+                    <td class="agent-directory-whatsapp"><?php echo esc_html($whatsapp); ?></td>
+                    <td class="agent-directory-email">
+                        <a href="mailto:<?php echo esc_attr($email); ?>">
+                            <?php echo esc_html($email); ?>
+                        </a>
+                    </td>
+                </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
@@ -182,7 +188,6 @@ function agent_directory_shortcode() {
     return ob_get_clean();
 }
 add_shortcode('agent_directory', 'agent_directory_shortcode');
-
 
 
 function agent_register_shortcode() {
