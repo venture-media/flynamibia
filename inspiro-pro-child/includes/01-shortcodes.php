@@ -131,7 +131,41 @@ function agent_directory_shortcode() {
         return '<p>No agent members found.</p>';
     }
 
-    ob_start(); ?>
+    // Export handler
+    if ( isset($_GET['export_agents_csv']) && $_GET['export_agents_csv'] === '1' ) {
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="agents.csv"');
+        $output = fopen('php://output', 'w');
+
+        // Column headers
+        fputcsv($output, ['First Name', 'Last Name', 'Email', 'Job Title', 'Company', 'Country', 'Mobile']);
+
+        foreach ($users as $user) {
+            $user_id  = $user->ID;
+            $title    = get_user_meta($user_id, 'agent_title', true);
+            $company  = get_user_meta($user_id, 'agent_company', true);
+            $country  = get_user_meta($user_id, 'agent_country', true);
+            $mobile   = get_user_meta($user_id, 'agent_mobile', true);
+
+            fputcsv($output, [
+                $user->first_name,
+                $user->last_name,
+                $user->user_email,
+                $title,
+                $company,
+                $country,
+                $mobile,
+            ]);
+        }
+
+        fclose($output);
+        exit;
+    }
+
+    ob_start();
+    ?>
+    <a href="<?php echo esc_url(add_query_arg('export_agents_csv', '1')); ?>" class="agent-export-btn">Export CSV for MailChimp</a>
 
     <table class="agent-directory">
         <thead>
