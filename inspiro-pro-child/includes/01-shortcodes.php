@@ -214,8 +214,12 @@ function agent_register_shortcode() {
             $errors[] = 'Email already registered.';
         }
 
+       // Clean first & last names for username
+        $first_name_clean = preg_replace('/\s+/', '-', $first_name);
+        $last_name_clean  = preg_replace('/\s+/', '-', $last_name);
+
         // Generate base username
-        $base_username = sanitize_user( strtolower($first_name . '-' . $last_name) );
+        $base_username = sanitize_user( strtolower($first_name_clean . '-' . $last_name_clean) );
         $username = $base_username;
         $counter = 1;
 
@@ -264,16 +268,16 @@ function agent_register_shortcode() {
     <form method="post" class="agent-register-form">
 
         <label>First Name</label>
-        <input type="text" name="first_name" required>
+        <input type="text" name="first_name" required autocomplete="given-name">
 
         <label>Last Name</label>
-        <input type="text" name="last_name" required>
+        <input type="text" name="last_name" required autocomplete="family-name">
 
         <label>Email</label>
-        <input type="email" name="email" required>
+        <input type="email" name="email" required autocomplete="email">
 
         <label>Password</label>
-        <input type="password" name="password" required>
+        <input type="password" name="password" required autocomplete="new-password">
 
         <input type="hidden" name="agent_register_nonce"
                value="<?php echo wp_create_nonce('agent_register'); ?>">
