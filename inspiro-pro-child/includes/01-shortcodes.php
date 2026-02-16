@@ -126,7 +126,7 @@ function agent_directory_shortcode() {
 
 
     $args = array(
-        'role__in' => array('agent', 'administrator'),
+        'role__in' => array('agent'),
         'number'   => 9999,
     );
 
@@ -162,10 +162,6 @@ function agent_directory_shortcode() {
                 $whatsapp = get_user_meta($user_id, 'agent_whatsapp', true);
                 $email    = get_user_meta($user_id, 'agent_email', true);
 
-                // Skip users with no profile data
-                // if (!$title && !$company && !$country && !$mobile && !$whatsapp && !$email) {
-                //    continue;
-                // }
             ?>
                 <tr>
                     <td class="agent-directory-name"><?php echo esc_html($user->display_name); ?></td>
@@ -175,11 +171,7 @@ function agent_directory_shortcode() {
                     <td class="agent-directory-mobile"><?php echo esc_html($mobile ?: '—'); ?></td>
                     <td class="agent-directory-whatsapp"><?php echo esc_html($whatsapp ?: '—'); ?></td>
                     <td class="agent-directory-email">
-                        <?php if ($email): ?>
-                            <a href="mailto:<?php echo esc_attr($email); ?>">
-                                <?php echo esc_html($email); ?>
-                            </a>
-                        <?php endif; ?>
+                        <?php echo $email ? '<a href="mailto:' . esc_attr($email) . '">' . esc_html($email) . '</a>' : '—'; ?>
                     </td>
                 </tr>
             <?php endforeach; ?>
