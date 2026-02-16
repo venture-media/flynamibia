@@ -134,6 +134,11 @@ function agent_directory_shortcode() {
     // Export handler
     if ( isset($_GET['export_agents_csv']) && $_GET['export_agents_csv'] === '1' ) {
 
+        // Clear all output buffers (remove any HTML output before CSV)
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename="agents.csv"');
         $output = fopen('php://output', 'w');
