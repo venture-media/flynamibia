@@ -33,7 +33,6 @@ function agent_dashboard_shortcode() {
         update_user_meta($user_id, 'agent_country', isset($_POST['agent_country']) ? sanitize_textarea_field($_POST['agent_country']) : '');
         update_user_meta($user_id, 'agent_mobile', isset($_POST['agent_mobile']) ? sanitize_text_field($_POST['agent_mobile']) : '');
         update_user_meta($user_id, 'agent_whatsapp', isset($_POST['agent_whatsapp']) ? sanitize_text_field($_POST['agent_whatsapp']) : '');
-        update_user_meta($user_id, 'agent_email', isset($_POST['agent_email']) ? sanitize_email($_POST['agent_email']) : '');
     
         // Set a transient to show a one-time success message
         set_transient('agent_profile_updated_' . $user_id, true, 30);
@@ -58,7 +57,6 @@ function agent_dashboard_shortcode() {
     $country   = get_user_meta($user_id, 'agent_country', true);
     $mobile = get_user_meta($user_id, 'agent_mobile', true);
     $whatsapp = get_user_meta($user_id, 'agent_whatsapp', true);
-    $email  = get_user_meta($user_id, 'agent_email', true);
 
     ob_start();
     echo $success_message;
@@ -78,9 +76,6 @@ function agent_dashboard_shortcode() {
 
         <label for="agent_whatsapp">Whatsapp number</label>
         <input type="text" id="agent_whatsapp" name="agent_whatsapp" value="<?php echo esc_attr($whatsapp); ?>">
-        
-        <label for="agent_email">Email address</label>
-        <input type="email" id="agent_email" name="agent_email" value="<?php echo esc_attr($email); ?>">
 
         <input type="hidden" name="agent_nonce" value="<?php echo wp_create_nonce('agent_update'); ?>">
         <button type="submit">Save Changes</button>
@@ -117,17 +112,17 @@ function agent_name_shortcode() {
 add_shortcode('agent_name', 'agent_name_shortcode');
 
 
-// Shortcode: [agent_directory]
 function agent_directory_shortcode() {
 
     if ( ! current_user_can('administrator') ) {
-    return '<p>You do not have permission to view this list.</p>';
-}
-
+        return '<p>You do not have permission to view this list.</p>';
+    }
 
     $args = array(
         'role__in' => array('agent'),
-        'number'   => 9999,
+        'number'   => -1, // get all agents
+        'orderby'  => 'display_name',
+        'order'    => 'ASC',
     );
 
     $users = get_users($args);
@@ -141,6 +136,7 @@ function agent_directory_shortcode() {
     <table class="agent-directory">
         <thead>
             <tr>
+                <th>Username</th>
                 <th>Name</th>
                 <th>Job Title</th>
                 <th>Company</th>
@@ -160,10 +156,12 @@ function agent_directory_shortcode() {
                 $country  = get_user_meta($user_id, 'agent_country', true);
                 $mobile   = get_user_meta($user_id, 'agent_mobile', true);
                 $whatsapp = get_user_meta($user_id, 'agent_whatsapp', true);
-                $email    = get_user_meta($user_id, 'agent_email', true);
+                $email    = $user->user_email;
+                $username = $user->user_login;
 
             ?>
                 <tr>
+                    <td class="agent-directory-username"><?php echo esc_html($username); ?></td>
                     <td class="agent-directory-name"><?php echo esc_html($user->display_name); ?></td>
                     <td class="agent-directory-title"><?php echo esc_html($title ?: '—'); ?></td>
                     <td class="agent-directory-company"><?php echo esc_html($company ?: '—'); ?></td>
@@ -191,52 +189,61 @@ function agent_register_shortcode() {
     }
 
     $errors = [];
-    $success = false;
 
     if (
         isset($_POST['agent_register_nonce']) &&
         wp_verify_nonce($_POST['agent_register_nonce'], 'agent_register')
     ) {
-    
-        // Honeypot – fail fast
+
+        // Honeypot
         if ( ! empty($_POST['website']) ) {
             wp_safe_redirect( home_url() );
             exit;
         }
-    
-        $username = sanitize_user( trim($_POST['username'] ?? '') );
-        $email    = sanitize_email( trim($_POST['email'] ?? '') );
-        $password = trim($_POST['password'] ?? '');
-    
-        if ( empty($username) || empty($email) || empty($password) ) {
+
+        $first_name = sanitize_text_field( trim($_POST['first_name'] ?? '') );
+        $last_name  = sanitize_text_field( trim($_POST['last_name'] ?? '') );
+        $email      = sanitize_email( trim($_POST['email'] ?? '') );
+        $password   = trim($_POST['password'] ?? '');
+
+        if ( empty($first_name) || empty($last_name) || empty($email) || empty($password) ) {
             $errors[] = 'All fields are required.';
         }
-    
-        if ( username_exists($username) ) {
-            $errors[] = 'Username already exists.';
-        }
-    
+
         if ( email_exists($email) ) {
             $errors[] = 'Email already registered.';
         }
 
-        
+        // Generate base username
+        $base_username = sanitize_user( strtolower($first_name . '-' . $last_name) );
+        $username = $base_username;
+        $counter = 1;
+
+        while ( username_exists($username) ) {
+            $username = $base_username . '-' . $counter;
+            $counter++;
+        }
+
         if ( empty($errors) ) {
-            $user_id = wp_create_user($username, $password, $email);
+
+            $user_id = wp_insert_user([
+                'user_login'   => $username,
+                'user_pass'    => $password,
+                'user_email'   => $email,
+                'first_name'   => $first_name,
+                'last_name'    => $last_name,
+                'display_name' => $first_name . ' ' . $last_name,
+                'role'         => 'agent',
+            ]);
 
             if ( ! is_wp_error($user_id) ) {
 
-                // Assign agent role
-                $user = new WP_User($user_id);
-                $user->set_role('agent');
-
-                // Auto login
                 wp_set_current_user($user_id);
                 wp_set_auth_cookie($user_id);
 
-                // Redirect to agent dashboard
                 wp_safe_redirect( get_permalink(13006) );
                 exit;
+
             } else {
                 $errors[] = $user_id->get_error_message();
             }
@@ -255,8 +262,12 @@ function agent_register_shortcode() {
     <?php endif; ?>
 
     <form method="post" class="agent-register-form">
-        <label>Username</label>
-        <input type="text" name="username" required>
+
+        <label>First Name</label>
+        <input type="text" name="first_name" required>
+
+        <label>Last Name</label>
+        <input type="text" name="last_name" required>
 
         <label>Email</label>
         <input type="email" name="email" required>
@@ -267,9 +278,8 @@ function agent_register_shortcode() {
         <input type="hidden" name="agent_register_nonce"
                value="<?php echo wp_create_nonce('agent_register'); ?>">
 
-        <!-- Honeypot field (should stay empty) -->
+        <!-- Honeypot -->
         <div style="display:none;">
-            <label>Leave this field empty</label>
             <input type="text" name="website" tabindex="-1" autocomplete="off">
         </div>
 
@@ -280,3 +290,4 @@ function agent_register_shortcode() {
     return ob_get_clean();
 }
 add_shortcode('agent_register', 'agent_register_shortcode');
+
