@@ -246,10 +246,27 @@ function agent_register_shortcode() {
         $last_name  = sanitize_text_field( trim($_POST['last_name'] ?? '') );
         $email      = sanitize_email( trim($_POST['email'] ?? '') );
         $password   = trim($_POST['password'] ?? '');
+        $agent_title    = sanitize_text_field(trim($_POST['agent_title'] ?? ''));
+        $agent_company  = sanitize_text_field(trim($_POST['agent_company'] ?? ''));
+        $agent_country  = sanitize_text_field(trim($_POST['agent_country'] ?? ''));
+        $agent_mobile   = sanitize_text_field(trim($_POST['agent_mobile'] ?? ''));
+        $agent_whatsapp = sanitize_text_field(trim($_POST['agent_whatsapp'] ?? ''));
 
-        if ( empty($first_name) || empty($last_name) || empty($email) || empty($password) ) {
+
+        if (
+            empty($first_name) ||
+            empty($last_name) ||
+            empty($email) ||
+            empty($password) ||
+            empty($agent_title) ||
+            empty($agent_company) ||
+            empty($agent_country) ||
+            empty($agent_mobile) ||
+            empty($agent_whatsapp)
+        ) {
             $errors[] = 'All fields are required.';
         }
+
 
         if ( email_exists($email) ) {
             $errors[] = 'Email already registered.';
@@ -282,6 +299,13 @@ function agent_register_shortcode() {
             ]);
 
             if ( ! is_wp_error($user_id) ) {
+
+                // Save agent meta fields
+                update_user_meta($user_id, 'agent_title', $agent_title);
+                update_user_meta($user_id, 'agent_company', $agent_company);
+                update_user_meta($user_id, 'agent_country', $agent_country);
+                update_user_meta($user_id, 'agent_mobile', $agent_mobile);
+                update_user_meta($user_id, 'agent_whatsapp', $agent_whatsapp);
 
                 $verification_key = wp_generate_password(32, false);
             
@@ -336,6 +360,21 @@ function agent_register_shortcode() {
 
         <input type="hidden" name="agent_register_nonce"
                value="<?php echo wp_create_nonce('agent_register'); ?>">
+
+        <label>Job Title</label>
+        <input type="text" name="agent_title" required>
+        
+        <label>Company</label>
+        <input type="text" name="agent_company" required>
+        
+        <label>Country</label>
+        <input type="text" name="agent_country" required>
+        
+        <label>Mobile Number</label>
+        <input type="text" name="agent_mobile" required>
+        
+        <label>WhatsApp Number</label>
+        <input type="text" name="agent_whatsapp" required>
 
         <!-- Honeypot -->
         <div style="display:none;">
