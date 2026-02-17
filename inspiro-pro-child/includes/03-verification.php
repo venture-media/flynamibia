@@ -30,10 +30,18 @@ function venture_handle_agent_email_verification() {
             $user = new WP_User($user_id);
             $user->set_role('agent');
 
-            // Remove verification key
             delete_user_meta($user_id, 'venture_email_verification_key');
 
-            wp_die('Your email has been verified. Your account is now active.');
+            // Build link to Agents Portal
+            $agent_portal_url = get_permalink(13006);
+
+            // Show success message with link
+            wp_die(
+                'Your email has been verified and your account is now active.<br><br>'
+                . '<a href="' . esc_url($agent_portal_url) . '">Continue to the Agents Portal</a>',
+                'Email Verified',
+                array( 'back_link' => false )
+            );
 
         } else {
             wp_die('Invalid or expired verification link.');
