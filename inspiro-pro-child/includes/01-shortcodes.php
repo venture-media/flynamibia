@@ -221,6 +221,8 @@ function agent_directory_shortcode() {
 add_shortcode('agent_directory', 'agent_directory_shortcode');
 
 
+
+// Agent registration shortcode
 function agent_register_shortcode() {
 
     if ( is_user_logged_in() ) {
@@ -281,15 +283,29 @@ function agent_register_shortcode() {
 
             if ( ! is_wp_error($user_id) ) {
 
-                wp_set_current_user($user_id);
-                wp_set_auth_cookie($user_id);
-
-                wp_safe_redirect( get_permalink(13006) );
-                exit;
-
-            } else {
-                $errors[] = $user_id->get_error_message();
+                $verification_key = wp_generate_password(32, false);
+            
+                update_user_meta($user_id, 'venture_email_verification_key', $verification_key);
+            
+                $verify_url = add_query_arg([
+                    'verify_account' => 1,
+                    'uid' => $user_id,
+                    'key' => $verification_key
+                ], home_url());
+            
+                $subject = __('Verify your account', 'venture');
+                $message = "Hi $first_name,\n\n";
+                $message .= "Please verify your account by clicking the link below:\n\n";
+                $message .= $verify_url . "\n\n";
+                $message .= "Thank you.";
+            
+                wp_mail($email, $subject, $message);
             }
+
+            if ( empty($errors) && isset($_POST['agent_register_nonce']) ) {
+                return '<p>Thank you! Please check your email to verify your account.</p>';
+            }
+
         }
     }
 
