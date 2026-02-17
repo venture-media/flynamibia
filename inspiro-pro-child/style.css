@@ -1,11 +1,11 @@
 /*
- Theme Name: Inspiro PRO Child v0.9.10
+ Theme Name: Inspiro PRO Child v0.9.11
  Theme URI: https://github.com/venture-media/flynamibia
  Description: Child theme for Inspiro Pro
  Author: Leon de Klerk
  Author URI: https://github.com/Leon2332/
  Template: wpzoom-inspiro-pro
- Version: 0.9.10
+ Version: 0.9.11
 
 
 ------------------------------------------------------------------
@@ -22,7 +22,8 @@ inspiro-pro-child/
     ├─ includes/                                 → PHP modules
     │       ├─ 00-roles.php
     │       ├─ 01-shortcodes.php
-    │       └─ 02-robots.php
+    │       ├─ 02-robots.php
+    │       └─ 03-verification.php
     │
     └─ screenshot.jpg                            → Theme screenshot for WP admin
 
