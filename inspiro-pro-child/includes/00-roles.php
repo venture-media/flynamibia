@@ -8,9 +8,25 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-/**
- * Register custom roles
- */
+
+ // Register pending agent role
+function venture_register_pending_agent_role() {
+
+    if ( ! get_role( 'pending_agent' ) ) {
+
+        add_role(
+            'pending_agent',
+            __( 'Pending Agent', 'venture' ),
+            array(
+                'read' => true,
+            )
+        );
+    }
+
+}
+add_action( 'init', 'venture_register_pending_agent_role', 5 );
+
+// Register agent role
 function venture_register_agent_role() {
 
     // Only add role if it doesn't already exist
@@ -26,8 +42,8 @@ function venture_register_agent_role() {
                 'edit_pages'               => false,
                 'edit_others_posts'        => false,
                 'publish_posts'            => false,
-                'upload_files'             => true,  // can upload files (for profile images)
-                'edit_user_meta'           => true,  // custom capability for agent meta
+                'upload_files'             => false,
+                'edit_user_meta'           => true,  
             )
         );
     }
